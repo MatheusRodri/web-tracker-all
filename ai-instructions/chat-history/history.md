@@ -46,3 +46,12 @@
 
 **Gemini:**
 > Atualizamos os selects e a validação do formulário em `page.tsx` para incluir as plataformas e formatos solicitados pelo usuário, bem como outras sugestões populares como Rocketseat, Pluralsight e EBAC. O build de produção compilou com sucesso.
+
+---
+## Métrica de Cursos Baseada em Minutos
+**Usuário:**
+> Outra melhoria. no curso, em uso minutos e não quantidade de aulas.
+> Medir progresso por: Coloca como primeira opção Minutos.
+
+**Gemini:**
+> Alteramos a métrica de "Quantidade de Aulas" para "Minutos Assistidos" na interface e no Firestore (`totalMinutes` e `currentMinutes`), e reorganizamos a seleção nos modais para que "Minutos" seja o primeiro e o padrão. O build de produção compilou com sucesso.
