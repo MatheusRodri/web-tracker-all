@@ -347,11 +347,11 @@ export default function AuthPage() {
       <DecorativeCircle2 />
 
       <GlassCard>
-        <Title>Tracker Shows</Title>
+        <Title>Tracker All</Title>
         <Subtitle>
           {isSignUp
-            ? 'Crie sua conta para começar a acompanhar séries e filmes'
-            : 'Faça login para gerenciar o que já assistiu'}
+            ? 'Crie sua conta para acompanhar seus shows, livros e cursos'
+            : 'Faça login para gerenciar o seu progresso'}
         </Subtitle>
 
         {error && <ErrorContainer>{error}</ErrorContainer>}
