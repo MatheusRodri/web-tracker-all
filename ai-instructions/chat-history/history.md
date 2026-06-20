@@ -14,3 +14,27 @@
 
 **Gemini:**
 > Entendido! Criei a pasta de legado `ai-instructions/legacy/` e movi todo o histórico, To-Dos, rascunhos e o antigo `system.md` para lá. Mantive a regra de desenvolvimento em `ai-instructions/rules.md` (com cópia no legado), recriei o `ai-instructions/system.md` adaptado para o novo escopo do "Tracker All" e criei as pastas vazias para o novo fluxo.
+
+---
+## Criação de Tarefas de Expansão (To-Dos)
+**Gemini:**
+> Criei os arquivos de tarefas detalhados em `ai-instructions/To-Dos/` para orientar a implementação das três categorias do Tracker All.
+>
+> Proponho os seguintes commits individuais para esta etapa:
+
+
+---
+## Implementação da Modelagem e CRUD no Firestore
+**Usuário:**
+> Lembra que tem que alterar o nome dos arquivos package...
+
+**Gemini:**
+> Alterado o nome do projeto para `web-tracker-all` no `package-lock.json` e executado `npm install`. Adicionadas as interfaces `TrackedBook` e `TrackedCourse` e implementadas as funções CRUD correspondentes no Firestore (`add`, `update`, `delete`, `subscribeTo`). O build local do Next.js agora usa fallbacks fictícios das chaves no `firebase.ts` para compilar sem erros de pré-renderização estática na ausência de chaves locais.
+
+---
+## Interface com Abas de Categorias, Cards e Modais Específicos
+**Usuário:**
+> Ok, aprovo mas tem uma observação na tela de login tem o Tracker Shows, precisa alterar
+
+**Gemini:**
+> Implementamos em `page.tsx` a barra de seleção de categorias, grids específicos e os modais de CRUD para livros e cursos com barras de progresso visuais e capas geradas por CSS. Também atualizamos o título do projeto para `Tracker All` e os textos de suporte na página de login (`login/page.tsx`). O build passou com 100% de sucesso.
