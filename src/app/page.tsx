@@ -949,9 +949,9 @@ export default function Home() {
   const [courseStatus, setCourseStatus] = useState<'PlanToStart' | 'Studying' | 'Completed'>('PlanToStart');
   const [courseRating, setCourseRating] = useState<number>(3);
   const [courseTimesCompleted, setCourseTimesCompleted] = useState<number>(1);
-  const [courseProgressType, setCourseProgressType] = useState<'lessons' | 'hours'>('lessons');
-  const [courseTotalLessons, setCourseTotalLessons] = useState<number>(10);
-  const [courseCurrentLesson, setCourseCurrentLesson] = useState<number>(0);
+  const [courseProgressType, setCourseProgressType] = useState<'minutes' | 'hours'>('minutes');
+  const [courseTotalMinutes, setCourseTotalMinutes] = useState<number>(120);
+  const [courseCurrentMinutes, setCourseCurrentMinutes] = useState<number>(0);
   const [courseTotalHours, setCourseTotalHours] = useState<number>(10);
   const [courseCurrentHours, setCourseCurrentHours] = useState<number>(0);
 
@@ -1277,9 +1277,9 @@ export default function Home() {
       rating: courseRating,
       timesCompleted: courseTimesCompleted,
       progressType: courseProgressType,
-      ...(courseProgressType === 'lessons' ? {
-        totalLessons: courseTotalLessons || 1,
-        currentLesson: courseStatus === 'Completed' ? courseTotalLessons : courseCurrentLesson
+      ...(courseProgressType === 'minutes' ? {
+        totalMinutes: courseTotalMinutes || 1,
+        currentMinutes: courseStatus === 'Completed' ? courseTotalMinutes : courseCurrentMinutes
       } : {
         totalHours: courseTotalHours || 1,
         currentHours: courseStatus === 'Completed' ? courseTotalHours : courseCurrentHours
@@ -1296,9 +1296,9 @@ export default function Home() {
       setCourseStatus('PlanToStart');
       setCourseRating(3);
       setCourseTimesCompleted(1);
-      setCourseProgressType('lessons');
-      setCourseTotalLessons(10);
-      setCourseCurrentLesson(0);
+      setCourseProgressType('minutes');
+      setCourseTotalMinutes(120);
+      setCourseCurrentMinutes(0);
       setCourseTotalHours(10);
       setCourseCurrentHours(0);
     } catch (err) {
@@ -1335,16 +1335,16 @@ export default function Home() {
     setCourseTimesCompleted(course.timesCompleted);
     setCourseProgressType(course.progressType);
     
-    if (course.progressType === 'lessons') {
-      setCourseTotalLessons(course.totalLessons || 10);
-      setCourseCurrentLesson(course.currentLesson || 0);
+    if (course.progressType === 'minutes') {
+      setCourseTotalMinutes(course.totalMinutes || 120);
+      setCourseCurrentMinutes(course.currentMinutes || 0);
       setCourseTotalHours(10);
       setCourseCurrentHours(0);
     } else {
       setCourseTotalHours(course.totalHours || 10);
       setCourseCurrentHours(course.currentHours || 0);
-      setCourseTotalLessons(10);
-      setCourseCurrentLesson(0);
+      setCourseTotalMinutes(120);
+      setCourseCurrentMinutes(0);
     }
   };
 
@@ -1353,7 +1353,6 @@ export default function Home() {
 
     const actualPlatform = coursePlatform === 'Other' ? courseCustomPlatform : coursePlatform;
 
-    // Reset irrelevant progress keys based on type
     const updatedFields: Partial<Omit<TrackedCourse, 'id' | 'userId' | 'createdAt'>> = {
       title: courseTitle,
       platform: actualPlatform || 'N/A',
@@ -1361,9 +1360,9 @@ export default function Home() {
       rating: courseRating,
       timesCompleted: courseTimesCompleted,
       progressType: courseProgressType,
-      ...(courseProgressType === 'lessons' ? {
-        totalLessons: courseTotalLessons,
-        currentLesson: courseStatus === 'Completed' ? courseTotalLessons : courseCurrentLesson
+      ...(courseProgressType === 'minutes' ? {
+        totalMinutes: courseTotalMinutes,
+        currentMinutes: courseStatus === 'Completed' ? courseTotalMinutes : courseCurrentMinutes
       } : {
         totalHours: courseTotalHours,
         currentHours: courseStatus === 'Completed' ? courseTotalHours : courseCurrentHours
@@ -1554,9 +1553,9 @@ export default function Home() {
                   setCourseStatus('PlanToStart');
                   setCourseRating(3);
                   setCourseTimesCompleted(1);
-                  setCourseProgressType('lessons');
-                  setCourseTotalLessons(10);
-                  setCourseCurrentLesson(0);
+                  setCourseProgressType('minutes');
+                  setCourseTotalMinutes(120);
+                  setCourseCurrentMinutes(0);
                   setCourseTotalHours(10);
                   setCourseCurrentHours(0);
                   setIsAddingCourse(true);
@@ -1699,9 +1698,9 @@ export default function Home() {
           filteredCourses.length > 0 ? (
             <ShowsGrid>
               {filteredCourses.map((course) => {
-                const isLessons = course.progressType === 'lessons';
-                const current = isLessons ? (course.currentLesson || 0) : (course.currentHours || 0);
-                const total = isLessons ? (course.totalLessons || 1) : (course.totalHours || 1);
+                const isMinutes = course.progressType === 'minutes';
+                const current = isMinutes ? (course.currentMinutes || 0) : (course.currentHours || 0);
+                const total = isMinutes ? (course.totalMinutes || 1) : (course.totalHours || 1);
                 const progressPercentage = total > 0 
                   ? Math.round((current / total) * 100) 
                   : 0;
@@ -1732,7 +1731,7 @@ export default function Home() {
                            course.status === 'Studying' ? 'Estudando' : 'Quero Começar'}
                         </CourseStatusBadge>
                         <PlatformBadge style={{ textTransform: 'capitalize' }}>
-                          {isLessons ? 'Aulas' : 'Horas'}
+                          {isMinutes ? 'Minutos' : 'Horas'}
                         </PlatformBadge>
                       </CardMeta>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto' }}>
@@ -1745,8 +1744,8 @@ export default function Home() {
                         </ProgressBarContainer>
                         <CardMeta style={{ fontSize: '0.75rem', color: 'var(--foreground-muted)', marginTop: '4px' }}>
                           <span>
-                            {isLessons 
-                              ? `Aula ${current} / ${total}` 
+                            {isMinutes 
+                              ? `${current}m / ${total}m` 
                               : `${current}h / ${total}h`
                             }
                           </span>
@@ -2563,7 +2562,7 @@ export default function Home() {
                       value={courseProgressType} 
                       onChange={(e) => setCourseProgressType(e.target.value as any)}
                     >
-                      <option value="lessons">Aulas Concluídas</option>
+                      <option value="minutes">Minutos Assistidos</option>
                       <option value="hours">Horas Assistidas</option>
                     </Select>
                   </InputWrapper>
@@ -2583,29 +2582,29 @@ export default function Home() {
                 </FormRow>
 
                 <FormRow>
-                  {courseProgressType === 'lessons' ? (
+                  {courseProgressType === 'minutes' ? (
                     <>
                       <InputWrapper>
-                        <InputLabel htmlFor="course-total-less-in">Total de Aulas</InputLabel>
+                        <InputLabel htmlFor="course-total-min-in">Total de Minutos</InputLabel>
                         <SmallInput 
                           type="number" 
-                          id="course-total-less-in" 
+                          id="course-total-min-in" 
                           min="1"
-                          value={courseTotalLessons}
-                          onChange={(e) => setCourseTotalLessons(parseInt(e.target.value, 10) || 10)}
+                          value={courseTotalMinutes}
+                          onChange={(e) => setCourseTotalMinutes(parseInt(e.target.value, 10) || 120)}
                         />
                       </InputWrapper>
 
                       {courseStatus === 'Studying' && (
                         <InputWrapper>
-                          <InputLabel htmlFor="course-curr-less-in">Aula Atual</InputLabel>
+                          <InputLabel htmlFor="course-curr-min-in">Minutos Concluídos</InputLabel>
                           <SmallInput 
                             type="number" 
-                            id="course-curr-less-in" 
+                            id="course-curr-min-in" 
                             min="0"
-                            max={courseTotalLessons}
-                            value={courseCurrentLesson}
-                            onChange={(e) => setCourseCurrentLesson(Math.min(parseInt(e.target.value, 10) || 0, courseTotalLessons))}
+                            max={courseTotalMinutes}
+                            value={courseCurrentMinutes}
+                            onChange={(e) => setCourseCurrentMinutes(Math.min(parseInt(e.target.value, 10) || 0, courseTotalMinutes))}
                           />
                         </InputWrapper>
                       )}
@@ -2750,7 +2749,7 @@ export default function Home() {
                       value={courseProgressType} 
                       onChange={(e) => setCourseProgressType(e.target.value as any)}
                     >
-                      <option value="lessons">Aulas Concluídas</option>
+                      <option value="minutes">Minutos Assistidos</option>
                       <option value="hours">Horas Assistidas</option>
                     </Select>
                   </InputWrapper>
@@ -2770,29 +2769,29 @@ export default function Home() {
                 </FormRow>
 
                 <FormRow>
-                  {courseProgressType === 'lessons' ? (
+                  {courseProgressType === 'minutes' ? (
                     <>
                       <InputWrapper>
-                        <InputLabel htmlFor="course-total-less-ed">Total de Aulas</InputLabel>
+                        <InputLabel htmlFor="course-total-min-ed">Total de Minutos</InputLabel>
                         <SmallInput 
                           type="number" 
-                          id="course-total-less-ed" 
+                          id="course-total-min-ed" 
                           min="1"
-                          value={courseTotalLessons}
-                          onChange={(e) => setCourseTotalLessons(parseInt(e.target.value, 10) || 10)}
+                          value={courseTotalMinutes}
+                          onChange={(e) => setCourseTotalMinutes(parseInt(e.target.value, 10) || 120)}
                         />
                       </InputWrapper>
 
                       {courseStatus === 'Studying' && (
                         <InputWrapper>
-                          <InputLabel htmlFor="course-curr-less-ed">Aula Atual</InputLabel>
+                          <InputLabel htmlFor="course-curr-min-ed">Minutos Concluídos</InputLabel>
                           <SmallInput 
                             type="number" 
-                            id="course-curr-less-ed" 
+                            id="course-curr-min-ed" 
                             min="0"
-                            max={courseTotalLessons}
-                            value={courseCurrentLesson}
-                            onChange={(e) => setCourseCurrentLesson(Math.min(parseInt(e.target.value, 10) || 0, courseTotalLessons))}
+                            max={courseTotalMinutes}
+                            value={courseCurrentMinutes}
+                            onChange={(e) => setCourseCurrentMinutes(Math.min(parseInt(e.target.value, 10) || 0, courseTotalMinutes))}
                           />
                         </InputWrapper>
                       )}
