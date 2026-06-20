@@ -1310,7 +1310,18 @@ export default function Home() {
     setEditingCourse(course);
     setCourseTitle(course.title);
     
-    const standardPlatforms = ['Udemy', 'Coursera', 'YouTube', 'Alura'];
+    const standardPlatforms = [
+      'Udemy', 
+      'Coursera', 
+      'YouTube', 
+      'Alura', 
+      'Asimov', 
+      'Hashtag', 
+      'Microsoft Learn', 
+      'Pluralsight', 
+      'Rocketseat', 
+      'EBAC'
+    ];
     if (standardPlatforms.includes(course.platform)) {
       setCoursePlatform(course.platform);
       setCourseCustomPlatform('');
@@ -2226,8 +2237,8 @@ export default function Home() {
                       value={bookFormat} 
                       onChange={(e) => setBookFormat(e.target.value)}
                     >
-                      <option value="Physical">Livro Físico</option>
-                      <option value="Kindle">Kindle / E-book</option>
+                      <option value="Physical">Físico</option>
+                      <option value="Kindle">Kindle</option>
                       <option value="PDF">PDF</option>
                       <option value="Audiobook">Audiobook</option>
                       <option value="Other">Outro (Especificar)</option>
@@ -2385,8 +2396,8 @@ export default function Home() {
                       value={bookFormat} 
                       onChange={(e) => setBookFormat(e.target.value)}
                     >
-                      <option value="Physical">Livro Físico</option>
-                      <option value="Kindle">Kindle / E-book</option>
+                      <option value="Physical">Físico</option>
+                      <option value="Kindle">Kindle</option>
                       <option value="PDF">PDF</option>
                       <option value="Audiobook">Audiobook</option>
                       <option value="Other">Outro (Especificar)</option>
@@ -2516,10 +2527,16 @@ export default function Home() {
                       value={coursePlatform} 
                       onChange={(e) => setCoursePlatform(e.target.value)}
                     >
-                      <option value="Udemy">Udemy</option>
-                      <option value="Coursera">Coursera</option>
-                      <option value="YouTube">YouTube</option>
                       <option value="Alura">Alura</option>
+                      <option value="Udemy">Udemy</option>
+                      <option value="Asimov">Asimov</option>
+                      <option value="Hashtag">Hashtag</option>
+                      <option value="YouTube">YouTube</option>
+                      <option value="Microsoft Learn">Microsoft Learn</option>
+                      <option value="Coursera">Coursera</option>
+                      <option value="Pluralsight">Pluralsight</option>
+                      <option value="Rocketseat">Rocketseat</option>
+                      <option value="EBAC">EBAC</option>
                       <option value="Other">Outra (Especificar)</option>
                     </Select>
                   </InputWrapper>
@@ -2698,10 +2715,16 @@ export default function Home() {
                       value={coursePlatform} 
                       onChange={(e) => setCoursePlatform(e.target.value)}
                     >
-                      <option value="Udemy">Udemy</option>
-                      <option value="Coursera">Coursera</option>
-                      <option value="YouTube">YouTube</option>
                       <option value="Alura">Alura</option>
+                      <option value="Udemy">Udemy</option>
+                      <option value="Asimov">Asimov</option>
+                      <option value="Hashtag">Hashtag</option>
+                      <option value="YouTube">YouTube</option>
+                      <option value="Microsoft Learn">Microsoft Learn</option>
+                      <option value="Coursera">Coursera</option>
+                      <option value="Pluralsight">Pluralsight</option>
+                      <option value="Rocketseat">Rocketseat</option>
+                      <option value="EBAC">EBAC</option>
                       <option value="Other">Outra (Especificar)</option>
                     </Select>
                   </InputWrapper>
