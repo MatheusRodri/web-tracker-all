@@ -60,9 +60,9 @@ export interface TrackedCourse {
   status: 'PlanToStart' | 'Studying' | 'Completed';
   rating: number;
   timesCompleted: number;
-  progressType: 'lessons' | 'hours';
-  totalLessons?: number;
-  currentLesson?: number;
+  progressType: 'minutes' | 'hours';
+  totalMinutes?: number;
+  currentMinutes?: number;
   totalHours?: number;
   currentHours?: number;
   createdAt: any;
