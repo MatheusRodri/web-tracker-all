@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { useAuth } from '@/context/AuthContext';
 import { 
   addShow, 
@@ -322,7 +322,7 @@ const StatusBadge = styled.span<{ $status: 'Unwatched' | 'Watching' | 'Watched' 
     props.$status === 'Watching' ? 'rgba(6, 182, 212, 0.3)' : 
     'rgba(245, 158, 11, 0.3)'};
 
-  ${props => props.$status === 'Watching' && `
+  ${props => props.$status === 'Watching' && css`
     animation: ${pulseGlow} 2s infinite ease-in-out;
   `}
 `;
@@ -826,7 +826,18 @@ export default function Home() {
     setRating(show.rating);
     
     // Check if platform is a standard option
-    const standardPlatforms = ['Netflix', 'AppleTv', 'Prime Video', 'Disney+', 'HBO Max', 'Paramount+'];
+    const standardPlatforms = [
+      'Netflix',
+      'Apple TV+',
+      'Prime Video',
+      'Disney+',
+      'HBO Max',
+      'Paramount+',
+      'GloboPlay',
+      'F1 TV',
+      'Universal+',
+      'Crunchyroll'
+    ];
     if (standardPlatforms.includes(show.platform)) {
       setPlatform(show.platform);
       setCustomPlatform('');
@@ -1124,11 +1135,15 @@ export default function Home() {
                         onChange={(e) => setPlatform(e.target.value)}
                       >
                         <option value="Netflix">Netflix</option>
-                        <option value="AppleTv">Apple TV+</option>
+                        <option value="Apple TV+">Apple TV+</option>
                         <option value="Prime Video">Prime Video</option>
                         <option value="Disney+">Disney+</option>
                         <option value="HBO Max">HBO Max</option>
                         <option value="Paramount+">Paramount+</option>
+                        <option value="GloboPlay">GloboPlay</option>
+                        <option value="F1 TV">F1 TV</option>
+                        <option value="Universal+">Universal+</option>
+                        <option value="Crunchyroll">Crunchyroll</option>
                         <option value="Other">Outro (Digitar)</option>
                       </Select>
                     </InputWrapper>
@@ -1313,11 +1328,15 @@ export default function Home() {
                         onChange={(e) => setPlatform(e.target.value)}
                       >
                         <option value="Netflix">Netflix</option>
-                        <option value="AppleTv">Apple TV+</option>
+                        <option value="Apple TV+">Apple TV+</option>
                         <option value="Prime Video">Prime Video</option>
                         <option value="Disney+">Disney+</option>
                         <option value="HBO Max">HBO Max</option>
                         <option value="Paramount+">Paramount+</option>
+                        <option value="GloboPlay">GloboPlay</option>
+                        <option value="F1 TV">F1 TV</option>
+                        <option value="Universal+">Universal+</option>
+                        <option value="Crunchyroll">Crunchyroll</option>
                         <option value="Other">Outro (Digitar)</option>
                       </Select>
                     </InputWrapper>
