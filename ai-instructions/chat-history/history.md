@@ -38,3 +38,11 @@
 
 **Gemini:**
 > Implementamos em `page.tsx` a barra de seleção de categorias, grids específicos e os modais de CRUD para livros e cursos com barras de progresso visuais e capas geradas por CSS. Também atualizamos o título do projeto para `Tracker All` e os textos de suporte na página de login (`login/page.tsx`). O build passou com 100% de sucesso.
+
+---
+## Melhorias nos Formatos de Livros e Plataformas de Cursos
+**Usuário:**
+> Da mesma forma que em shows tem, tbm em livros e courses tbm. Ou seja em livros, terá: Kindle, Fisico, PDF. Em cursos: Alura, Udemy, Asimov, Hashtag, Youtube, Microsoft Learn. Pode adicionar outras opções se lembrar
+
+**Gemini:**
+> Atualizamos os selects e a validação do formulário em `page.tsx` para incluir as plataformas e formatos solicitados pelo usuário, bem como outras sugestões populares como Rocketseat, Pluralsight e EBAC. O build de produção compilou com sucesso.
