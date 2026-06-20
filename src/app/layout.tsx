@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StyledComponentsRegistry from "@/lib/registry";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,8 +20,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout component for the application. Wraps children with styled-components registry
- * and sets up global fonts and HTML structure.
+ * Root layout component for the application. Wraps children with styled-components registry,
+ * auth provider, and sets up global fonts and HTML structure.
  *
  * @param props - React props containing the page children
  * @returns The root HTML layout structure
@@ -34,7 +35,9 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         <StyledComponentsRegistry>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </StyledComponentsRegistry>
       </body>
     </html>
