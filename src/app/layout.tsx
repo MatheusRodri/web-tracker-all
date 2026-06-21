@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tracker Shows",
-  description: "Gerencie suas séries e filmes favoritos",
+  title: "Tracker All",
+  description: "Gerencie livros, cursos, séries e muito mais!",
 };
 
 /**
