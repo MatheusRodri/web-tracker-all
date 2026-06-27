@@ -30,6 +30,7 @@ export interface TrackedShow {
   rating: number;
   platform: string;
   timesWatched: number;
+  watchOrder?: number | null;
   seasonsCount?: number;
   episodesCount?: number;
   currentSeason?: number;
