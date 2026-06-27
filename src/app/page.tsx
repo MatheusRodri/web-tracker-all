@@ -315,6 +315,20 @@ const CardPoster = styled.img`
   background-color: #13131c;
 `;
 
+const OrderBadge = styled.div`
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--primary);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+`;
+
 // Book Card Styles
 const BookCard = styled.div`
   background: var(--card-bg);
@@ -918,6 +932,7 @@ export default function Home() {
   // Local filtering states
   const [activeTab, setActiveTab] = useState<string>('All');
   const [localSearch, setLocalSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'watchOrder' | 'rating' | 'title'>('recent');
 
   // Form Fields: Shows
   const [status, setStatus] = useState<'Unwatched' | 'Watching' | 'Watched'>('Unwatched');
@@ -925,6 +940,7 @@ export default function Home() {
   const [platform, setPlatform] = useState('Netflix');
   const [customPlatform, setCustomPlatform] = useState('');
   const [timesWatched, setTimesWatched] = useState<number>(1);
+  const [watchOrder, setWatchOrder] = useState<number | ''>('');
   const [currentSeason, setCurrentSeason] = useState<number>(1);
   const [currentEpisode, setCurrentEpisode] = useState<number>(1);
   const [seasonsCount, setSeasonsCount] = useState<number>(1);
@@ -1049,7 +1065,8 @@ export default function Home() {
           setRating(3);
           setPlatform('Netflix');
           setCustomPlatform('');
-          setTimesWatched(1);
+          setTimesWatched(0);
+          setWatchOrder('');
           setCurrentSeason(1);
           setCurrentEpisode(1);
           setSeasonsCount(data.totalSeasons ? parseInt(data.totalSeasons, 10) || 1 : 1);
@@ -1084,6 +1101,7 @@ export default function Home() {
       rating,
       platform: actualPlatform || 'N/A',
       timesWatched,
+      watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(selectedOMDBShow.Type === 'series' ? {
         seasonsCount,
         episodesCount,
@@ -1095,6 +1113,7 @@ export default function Home() {
     try {
       await addShow(user.uid, newShow);
       setSelectedOMDBShow(null);
+      setWatchOrder('');
     } catch (err) {
       console.error('Failed to save show:', err);
     }
@@ -1118,6 +1137,7 @@ export default function Home() {
     }
 
     setTimesWatched(show.timesWatched);
+    setWatchOrder(show.watchOrder !== undefined && show.watchOrder !== null ? show.watchOrder : '');
     if (show.type === 'series') {
       setCurrentSeason(show.currentSeason || 1);
       setCurrentEpisode(show.currentEpisode || 1);
@@ -1136,6 +1156,7 @@ export default function Home() {
       rating,
       platform: actualPlatform || 'N/A',
       timesWatched,
+      watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(editingShow.type === 'series' ? {
         currentSeason,
         currentEpisode,
@@ -1147,6 +1168,7 @@ export default function Home() {
     try {
       await updateShow(editingShow.id, updatedFields);
       setEditingShow(null);
+      setWatchOrder('');
     } catch (err) {
       console.error('Failed to update show:', err);
     }
@@ -1399,12 +1421,29 @@ export default function Home() {
   };
 
   // Helper local filters application
-  const filteredShows = shows.filter(show => {
-    const matchesTab = activeTab === 'All' ? true : show.status === activeTab;
-    const matchesSearch = show.title.toLowerCase().includes(localSearch.toLowerCase()) || 
-                          show.genre.toLowerCase().includes(localSearch.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  // Helper local filters application
+  const filteredShows = shows
+    .filter(show => {
+      const matchesTab = activeTab === 'All' ? true : show.status === activeTab;
+      const matchesSearch = show.title.toLowerCase().includes(localSearch.toLowerCase()) || 
+                            show.genre.toLowerCase().includes(localSearch.toLowerCase());
+      return matchesTab && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'watchOrder') {
+        const orderA = a.watchOrder !== undefined && a.watchOrder !== null ? a.watchOrder : Infinity;
+        const orderB = b.watchOrder !== undefined && b.watchOrder !== null ? b.watchOrder : Infinity;
+        if (orderA !== orderB) return orderA - orderB;
+        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+      }
+      if (sortBy === 'rating') {
+        return b.rating - a.rating;
+      }
+      if (sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      }
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
 
   const filteredBooks = books.filter(book => {
     const matchesTab = activeTab === 'All' ? true : book.status === activeTab;
@@ -1581,6 +1620,31 @@ export default function Home() {
             ))}
           </TabList>
 
+          {activeCategory === 'shows' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--foreground-muted)' }}>Ordenar:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="recent">Recentes</option>
+                <option value="watchOrder">Ordem Cronológica</option>
+                <option value="rating">Nota</option>
+                <option value="title">Título (A-Z)</option>
+              </select>
+            </div>
+          )}
+
           <LocalSearchInput
             type="text"
             placeholder={activeCategory === 'shows' ? "Filtrar por título ou gênero..." : activeCategory === 'books' ? "Filtrar por título, autor ou gênero..." : "Filtrar por título ou plataforma..."}
@@ -1595,6 +1659,9 @@ export default function Home() {
             <ShowsGrid>
               {filteredShows.map((show) => (
                 <ShowCard key={show.id} onClick={() => handleStartEditShow(show)}>
+                  {show.watchOrder !== undefined && show.watchOrder !== null && show.watchOrder > 0 && (
+                    <OrderBadge>#{show.watchOrder}</OrderBadge>
+                  )}
                   <CardPoster src={show.poster} alt={show.title} />
                   <CardBody>
                     <CardTitle>{show.title}</CardTitle>
@@ -1907,6 +1974,18 @@ export default function Home() {
                         onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
+
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-watch-order">Ordem Cronológica / Posição (Opcional)</InputLabel>
+                      <SmallInput 
+                        type="number" 
+                        id="add-watch-order" 
+                        min="1"
+                        placeholder="Ex: 1, 2, 3..."
+                        value={watchOrder}
+                        onChange={(e) => setWatchOrder(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      />
+                    </InputWrapper>
                   </FormRow>
 
                   {/* Series specifics */}
@@ -2105,6 +2184,18 @@ export default function Home() {
                         min="0"
                         value={timesWatched}
                         onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-watch-order">Ordem Cronológica / Posição (Opcional)</InputLabel>
+                      <SmallInput 
+                        type="number" 
+                        id="edit-watch-order" 
+                        min="1"
+                        placeholder="Ex: 1, 2, 3..."
+                        value={watchOrder}
+                        onChange={(e) => setWatchOrder(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value, 10) || 1))}
                       />
                     </InputWrapper>
                   </FormRow>
