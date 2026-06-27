@@ -1827,7 +1827,15 @@ export default function Home() {
                       <Select 
                         id="add-status" 
                         value={status} 
-                        onChange={(e) => setStatus(e.target.value as any)}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as 'Unwatched' | 'Watching' | 'Watched';
+                          setStatus(newStatus);
+                          if (newStatus === 'Unwatched') {
+                            setTimesWatched(0);
+                          } else if (newStatus === 'Watched' && timesWatched === 0) {
+                            setTimesWatched(1);
+                          }
+                        }}
                       >
                         <option value="Unwatched">Não Assistido</option>
                         <option value="Watching">Assistindo</option>
@@ -1894,9 +1902,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="add-times-watched" 
-                        min="1"
+                        min="0"
                         value={timesWatched}
-                        onChange={(e) => setTimesWatched(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   </FormRow>
@@ -2020,7 +2028,15 @@ export default function Home() {
                       <Select 
                         id="edit-status" 
                         value={status} 
-                        onChange={(e) => setStatus(e.target.value as any)}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as 'Unwatched' | 'Watching' | 'Watched';
+                          setStatus(newStatus);
+                          if (newStatus === 'Unwatched') {
+                            setTimesWatched(0);
+                          } else if (newStatus === 'Watched' && timesWatched === 0) {
+                            setTimesWatched(1);
+                          }
+                        }}
                       >
                         <option value="Unwatched">Não Assistido</option>
                         <option value="Watching">Assistindo</option>
@@ -2086,9 +2102,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="edit-times-watched" 
-                        min="1"
+                        min="0"
                         value={timesWatched}
-                        onChange={(e) => setTimesWatched(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   </FormRow>
@@ -2264,7 +2280,15 @@ export default function Home() {
                     <Select 
                       id="book-status-in" 
                       value={bookStatus} 
-                      onChange={(e) => setBookStatus(e.target.value as any)}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as 'PlanToRead' | 'Reading' | 'Read';
+                        setBookStatus(newStatus);
+                        if (newStatus === 'PlanToRead') {
+                          setBookTimesRead(0);
+                        } else if (newStatus === 'Read' && bookTimesRead === 0) {
+                          setBookTimesRead(1);
+                        }
+                      }}
                     >
                       <option value="PlanToRead">Quero Ler</option>
                       <option value="Reading">Lendo</option>
@@ -2294,9 +2318,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="book-times-read-in" 
-                        min="1"
+                        min="0"
                         value={bookTimesRead}
-                        onChange={(e) => setBookTimesRead(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setBookTimesRead(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   )}
@@ -2422,7 +2446,15 @@ export default function Home() {
                     <Select 
                       id="book-status-ed" 
                       value={bookStatus} 
-                      onChange={(e) => setBookStatus(e.target.value as any)}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as 'PlanToRead' | 'Reading' | 'Read';
+                        setBookStatus(newStatus);
+                        if (newStatus === 'PlanToRead') {
+                          setBookTimesRead(0);
+                        } else if (newStatus === 'Read' && bookTimesRead === 0) {
+                          setBookTimesRead(1);
+                        }
+                      }}
                     >
                       <option value="PlanToRead">Quero Ler</option>
                       <option value="Reading">Lendo</option>
@@ -2452,9 +2484,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="book-times-read-ed" 
-                        min="1"
+                        min="0"
                         value={bookTimesRead}
-                        onChange={(e) => setBookTimesRead(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setBookTimesRead(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   )}
@@ -2572,7 +2604,15 @@ export default function Home() {
                     <Select 
                       id="course-status-in" 
                       value={courseStatus} 
-                      onChange={(e) => setCourseStatus(e.target.value as any)}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as 'PlanToStart' | 'Studying' | 'Completed';
+                        setCourseStatus(newStatus);
+                        if (newStatus === 'PlanToStart') {
+                          setCourseTimesCompleted(0);
+                        } else if (newStatus === 'Completed' && courseTimesCompleted === 0) {
+                          setCourseTimesCompleted(1);
+                        }
+                      }}
                     >
                       <option value="PlanToStart">Quero Começar</option>
                       <option value="Studying">Estudando</option>
@@ -2646,9 +2686,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="course-times-comp-in" 
-                        min="1"
+                        min="0"
                         value={courseTimesCompleted}
-                        onChange={(e) => setCourseTimesCompleted(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setCourseTimesCompleted(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   )}
@@ -2759,7 +2799,15 @@ export default function Home() {
                     <Select 
                       id="course-status-ed" 
                       value={courseStatus} 
-                      onChange={(e) => setCourseStatus(e.target.value as any)}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as 'PlanToStart' | 'Studying' | 'Completed';
+                        setCourseStatus(newStatus);
+                        if (newStatus === 'PlanToStart') {
+                          setCourseTimesCompleted(0);
+                        } else if (newStatus === 'Completed' && courseTimesCompleted === 0) {
+                          setCourseTimesCompleted(1);
+                        }
+                      }}
                     >
                       <option value="PlanToStart">Quero Começar</option>
                       <option value="Studying">Estudando</option>
@@ -2833,9 +2881,9 @@ export default function Home() {
                       <SmallInput 
                         type="number" 
                         id="course-times-comp-ed" 
-                        min="1"
+                        min="0"
                         value={courseTimesCompleted}
-                        onChange={(e) => setCourseTimesCompleted(parseInt(e.target.value, 10) || 1)}
+                        onChange={(e) => setCourseTimesCompleted(Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
                   )}
