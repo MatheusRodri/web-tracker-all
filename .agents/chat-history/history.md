@@ -83,3 +83,32 @@
 
 **Gemini:**
 > Corrigimos a pasta de planos de implementação para salvar em `.agents/implementation-plans/` (removendo a pasta duplicada no root) e atualizamos o histórico de conversas em `.agents/chat-history/history.md`.
+
+---
+## Polimento Mobile, Menu Hambúrguer, Filtros de Tipo/Serviço e Cadastro Manual
+**Usuário:**
+> Vamos arrumar os detalhes.
+> Versão computador:
+> - o combobox, está com fundo branco e as fontes brancas, ou seja não dá para ver. Deixe de forma uniforme com o layout
+> - o Filtro deve permitir pesquisar por nome do serviço
+> - A lista de serviços de streming precisa está em ordem alfabetica.
+> - Permitir colocar nota 0 ( Tem filme que nunca vi. não faz sentido ter uma nota inicial)
+> 
+> Agora versão mobile.
+> - Dependendo do e-mail do user, o botão de sair fica expremido, cria um menu hambuger.
+> - O menu do todos, não assistido... Está cortado ( Não aparece assistido)
+> - a barra de pesquisa e ordenar, não estão centralizados
+> 
+> Outra coisa, mesmo que não ache o filme ou serie, permita adicionar. 
+> Porém fica sem imagem e as demais informações o usuario digita. 
+> e um filtro por filmes e serie
+
+**Gemini:**
+> Implementamos um conjunto abrangente de melhorias visuais e funcionais em [page.tsx](file:///c:/projects/web-tracker-all/src/app/page.tsx):
+> - **Menu Hambúrguer Responsivo:** Substituímos os botões de logout da barra de navegação superior por um menu do tipo hambúrguer para dispositivos móveis, resolvendo o problema de compressão do e-mail do usuário.
+> - **Ajustes de Mobile e CSS:** Corrigimos os estilos do filtro `TabList` habilitando rolagem horizontal suave e prevenindo o encolhimento das abas. Centralizamos a barra de pesquisa e de ordenação em resoluções mobile.
+> - **Combobox e Filtro de Plataformas:** Padronizamos as cores dos elementos `<select>` integrando o novo component `SortSelect`. Ordenamos a lista global `STREAMING_PLATFORMS` em ordem alfabética e adicionamos suporte a pesquisa de shows filtrando pelo nome da plataforma.
+> - **Nota Zero ("Sem nota"):** Permitimos a nota inicial 0 e adicionamos botões funcionais para limpar estrelas ("Sem nota") em todos os modais (Shows, Livros, Cursos e no Importador), melhorando a renderização visual das estrelas vazias com opacidade suave.
+> - **Cadastro Manual de Shows:** Adicionamos um botão de "Adicionar Manual" que permite cadastrar novos títulos com metadados personalizados editáveis (como Título, Tipo, Ano, Diretor, Gênero, Duração, etc.) sem depender de buscas na API do OMDB.
+> - **Filtro de Tipo:** Criamos um filtro por tipo (Todos, Filmes, Séries) integrado aos controles da dashboard.
+
