@@ -23,6 +23,19 @@ import {
 } from '@/lib/firestore';
 import { OMBDetailResponse, OMDBMovie, OMBSearchResponse } from './api/search/route';
 
+const STREAMING_PLATFORMS = [
+  'Apple TV+',
+  'Crunchyroll',
+  'Disney+',
+  'F1 TV',
+  'GloboPlay',
+  'HBO Max',
+  'Netflix',
+  'Paramount+',
+  'Prime Video',
+  'Universal+'
+];
+
 // CSS Keyframes for smooth animations
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -70,6 +83,46 @@ const UserActions = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const MobileDropdownMenu = styled.div`
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #0d0d13;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 16px 24px;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  min-width: 200px;
+  
+  @media (max-width: 768px) {
+    display: flex;
+  }
 `;
 
 const UserEmail = styled.span`
@@ -238,6 +291,12 @@ const FilterSection = styled.div`
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 10px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
 `;
 
 const TabList = styled.div`
@@ -247,6 +306,19 @@ const TabList = styled.div`
   padding: 4px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
@@ -259,6 +331,7 @@ const TabButton = styled.button<{ $active: boolean }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 
   &:hover {
     color: #ffffff;
@@ -275,6 +348,10 @@ const LocalSearchInput = styled.input`
   font-size: 0.9rem;
   max-width: 250px;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    max-width: 320px;
+  }
 
   &:focus {
     outline: none;
@@ -779,6 +856,17 @@ const Select = styled.select`
   }
 `;
 
+const SortSelect = styled(Select)`
+  width: auto;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+`;
+
 const SmallInput = styled.input`
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
@@ -950,7 +1038,14 @@ const EmptyText = styled.p`
 const renderStars = (rating: number) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
-    stars.push(<span key={i}>{i <= rating ? '★' : '☆'}</span>);
+    stars.push(
+      <span 
+        key={i} 
+        style={{ color: i <= rating ? '#fbbf24' : 'rgba(255, 255, 255, 0.15)' }}
+      >
+        ★
+      </span>
+    );
   }
   return stars;
 };
@@ -964,6 +1059,7 @@ const renderStars = (rating: number) => {
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Categories & Lists State
   const [activeCategory, setActiveCategory] = useState<'shows' | 'books' | 'courses'>('shows');
@@ -974,8 +1070,6 @@ export default function Home() {
   // Show Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<OMDBMovie[]>([]);
-  const [selectedOMDBShow, setSelectedOMDBShow] = useState<OMBDetailResponse | null>(null);
-
   // Modals Visibility
   const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
   const [isAddingBook, setIsAddingBook] = useState(false);
@@ -987,10 +1081,11 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('All');
   const [localSearch, setLocalSearch] = useState('');
   const [sortBy, setSortBy] = useState<'recent' | 'watchOrder' | 'rating' | 'title'>('recent');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
 
   // Form Fields: Shows
   const [status, setStatus] = useState<'Unwatched' | 'Watching' | 'Watched'>('Unwatched');
-  const [rating, setRating] = useState<number>(3);
+  const [rating, setRating] = useState<number>(0);
   const [platform, setPlatform] = useState('Netflix');
   const [customPlatform, setCustomPlatform] = useState('');
   const [timesWatched, setTimesWatched] = useState<number>(1);
@@ -1000,6 +1095,19 @@ export default function Home() {
   const [seasonsCount, setSeasonsCount] = useState<number>(1);
   const [episodesCount, setEpisodesCount] = useState<number>(1);
 
+  // Show Manual & Edit Form States
+  const [showTitle, setShowTitle] = useState('');
+  const [showType, setShowType] = useState<'movie' | 'series'>('movie');
+  const [showYear, setShowYear] = useState('');
+  const [showGenre, setShowGenre] = useState('');
+  const [showDirector, setShowDirector] = useState('');
+  const [showRuntime, setShowRuntime] = useState('');
+  const [showProduction, setShowProduction] = useState('');
+  const [showCountry, setShowCountry] = useState('');
+  const [showPoster, setShowPoster] = useState('');
+  const [showImdbID, setShowImdbID] = useState('');
+  const [isAddingShow, setIsAddingShow] = useState(false);
+
   // Show Import State
   const [isImportingShows, setIsImportingShows] = useState(false);
   const [importStep, setImportStep] = useState<number>(1);
@@ -1007,7 +1115,7 @@ export default function Home() {
   const [importItems, setImportItems] = useState<any[]>([]);
   const [importGlobalStatus, setImportGlobalStatus] = useState<'Unwatched' | 'Watching' | 'Watched'>('Watched');
   const [importGlobalPlatform, setImportGlobalPlatform] = useState('Netflix');
-  const [importGlobalRating, setImportGlobalRating] = useState<number>(3);
+  const [importGlobalRating, setImportGlobalRating] = useState<number>(0);
   const [importGlobalTimesWatched, setImportGlobalTimesWatched] = useState<number>(1);
   const [importActiveTab, setImportActiveTab] = useState<'text' | 'csv'>('text');
   
@@ -1025,7 +1133,7 @@ export default function Home() {
   const [bookCustomFormat, setBookCustomFormat] = useState('');
   const [bookStatus, setBookStatus] = useState<'PlanToRead' | 'Reading' | 'Read'>('PlanToRead');
   const [bookCurrentPage, setBookCurrentPage] = useState<number>(0);
-  const [bookRating, setBookRating] = useState<number>(3);
+  const [bookRating, setBookRating] = useState<number>(0);
   const [bookTimesRead, setBookTimesRead] = useState<number>(1);
 
   // Form Fields: Courses
@@ -1033,7 +1141,7 @@ export default function Home() {
   const [coursePlatform, setCoursePlatform] = useState('Udemy');
   const [courseCustomPlatform, setCourseCustomPlatform] = useState('');
   const [courseStatus, setCourseStatus] = useState<'PlanToStart' | 'Studying' | 'Completed'>('PlanToStart');
-  const [courseRating, setCourseRating] = useState<number>(3);
+  const [courseRating, setCourseRating] = useState<number>(0);
   const [courseTimesCompleted, setCourseTimesCompleted] = useState<number>(1);
   const [courseProgressType, setCourseProgressType] = useState<'minutes' | 'hours'>('minutes');
   const [courseTotalMinutes, setCourseTotalMinutes] = useState<number>(120);
@@ -1129,10 +1237,21 @@ export default function Home() {
       if (response.ok) {
         const data: OMBDetailResponse = await response.json();
         if (data.Response === 'True') {
-          setSelectedOMDBShow(data);
+          // Set editable metadata states
+          setShowTitle(data.Title);
+          setShowType(data.Type === 'series' ? 'series' : 'movie');
+          setShowYear(data.Year);
+          setShowGenre(data.Genre);
+          setShowDirector(data.Director);
+          setShowRuntime(data.Runtime);
+          setShowProduction(data.Production || 'N/A');
+          setShowCountry(data.Country);
+          setShowPoster(data.Poster !== 'N/A' ? data.Poster : '/file.svg');
+          setShowImdbID(data.imdbID);
+
           // Set default form values
           setStatus('Unwatched');
-          setRating(3);
+          setRating(0);
           setPlatform('Netflix');
           setCustomPlatform('');
           setTimesWatched(0);
@@ -1141,6 +1260,8 @@ export default function Home() {
           setCurrentEpisode(1);
           setSeasonsCount(data.totalSeasons ? parseInt(data.totalSeasons, 10) || 1 : 1);
           setEpisodesCount(12);
+          
+          setIsAddingShow(true);
         }
       }
     } catch (err) {
@@ -1152,27 +1273,27 @@ export default function Home() {
      SHOW HANDLERS
      ========================================================================= */
   const handleSaveShow = async () => {
-    if (!user || !selectedOMDBShow) return;
+    if (!user) return;
 
     const actualPlatform = platform === 'Other' ? customPlatform : platform;
 
     const newShow: Omit<TrackedShow, 'id' | 'userId' | 'createdAt'> = {
-      imdbID: selectedOMDBShow.imdbID,
-      title: selectedOMDBShow.Title,
-      type: selectedOMDBShow.Type as 'movie' | 'series',
-      year: selectedOMDBShow.Year,
-      poster: selectedOMDBShow.Poster !== 'N/A' ? selectedOMDBShow.Poster : '/file.svg',
-      genre: selectedOMDBShow.Genre,
-      director: selectedOMDBShow.Director,
-      runtime: selectedOMDBShow.Runtime,
-      production: selectedOMDBShow.Production || 'N/A',
-      country: selectedOMDBShow.Country,
+      imdbID: showImdbID || 'manual',
+      title: showTitle,
+      type: showType,
+      year: showYear,
+      poster: showPoster || '/file.svg',
+      genre: showGenre || 'N/A',
+      director: showDirector || 'N/A',
+      runtime: showRuntime || 'N/A',
+      production: showProduction || 'N/A',
+      country: showCountry || 'N/A',
       status,
       rating,
       platform: actualPlatform || 'N/A',
       timesWatched,
       watchOrder: watchOrder !== '' ? watchOrder : null,
-      ...(selectedOMDBShow.Type === 'series' ? {
+      ...(showType === 'series' ? {
         seasonsCount,
         episodesCount,
         currentSeason,
@@ -1182,8 +1303,28 @@ export default function Home() {
 
     try {
       await addShow(user.uid, newShow);
-      setSelectedOMDBShow(null);
+      setIsAddingShow(false);
+
+      // Reset states
+      setShowTitle('');
+      setShowType('movie');
+      setShowYear('');
+      setShowGenre('');
+      setShowDirector('');
+      setShowRuntime('');
+      setShowProduction('');
+      setShowCountry('');
+      setShowPoster('');
+      setShowImdbID('');
+
+      setStatus('Unwatched');
+      setRating(0);
+      setPlatform('Netflix');
+      setCustomPlatform('');
+      setTimesWatched(1);
       setWatchOrder('');
+      setCurrentSeason(1);
+      setCurrentEpisode(1);
     } catch (err) {
       console.error('Failed to save show:', err);
     }
@@ -1191,14 +1332,23 @@ export default function Home() {
 
   const handleStartEditShow = (show: TrackedShow) => {
     setEditingShow(show);
+    
+    // Set editable metadata states
+    setShowTitle(show.title);
+    setShowType(show.type);
+    setShowYear(show.year);
+    setShowGenre(show.genre || '');
+    setShowDirector(show.director || '');
+    setShowRuntime(show.runtime || '');
+    setShowProduction(show.production || '');
+    setShowCountry(show.country || '');
+    setShowPoster(show.poster || '');
+    setShowImdbID(show.imdbID || '');
+
     setStatus(show.status);
     setRating(show.rating);
     
-    const standardPlatforms = [
-      'Netflix', 'Apple TV+', 'Prime Video', 'Disney+', 'HBO Max',
-      'Paramount+', 'GloboPlay', 'F1 TV', 'Universal+', 'Crunchyroll'
-    ];
-    if (standardPlatforms.includes(show.platform)) {
+    if (STREAMING_PLATFORMS.includes(show.platform)) {
       setPlatform(show.platform);
       setCustomPlatform('');
     } else {
@@ -1222,12 +1372,22 @@ export default function Home() {
     const actualPlatform = platform === 'Other' ? customPlatform : platform;
 
     const updatedFields: Partial<Omit<TrackedShow, 'id' | 'userId' | 'createdAt'>> = {
+      title: showTitle,
+      type: showType,
+      year: showYear,
+      genre: showGenre,
+      director: showDirector,
+      runtime: showRuntime,
+      production: showProduction,
+      country: showCountry,
+      poster: showPoster,
+      imdbID: showImdbID,
       status,
       rating,
       platform: actualPlatform || 'N/A',
       timesWatched,
       watchOrder: watchOrder !== '' ? watchOrder : null,
-      ...(editingShow.type === 'series' ? {
+      ...(showType === 'series' ? {
         currentSeason,
         currentEpisode,
         seasonsCount,
@@ -1238,6 +1398,18 @@ export default function Home() {
     try {
       await updateShow(editingShow.id, updatedFields);
       setEditingShow(null);
+
+      // Reset states
+      setShowTitle('');
+      setShowType('movie');
+      setShowYear('');
+      setShowGenre('');
+      setShowDirector('');
+      setShowRuntime('');
+      setShowProduction('');
+      setShowCountry('');
+      setShowPoster('');
+      setShowImdbID('');
       setWatchOrder('');
     } catch (err) {
       console.error('Failed to update show:', err);
@@ -1595,7 +1767,7 @@ export default function Home() {
       setBookCustomFormat('');
       setBookStatus('PlanToRead');
       setBookCurrentPage(0);
-      setBookRating(3);
+      setBookRating(0);
       setBookTimesRead(1);
     } catch (err) {
       console.error('Failed to save book:', err);
@@ -1693,7 +1865,7 @@ export default function Home() {
       setCoursePlatform('Udemy');
       setCourseCustomPlatform('');
       setCourseStatus('PlanToStart');
-      setCourseRating(3);
+      setCourseRating(0);
       setCourseTimesCompleted(1);
       setCourseProgressType('minutes');
       setCourseTotalMinutes(120);
@@ -1802,9 +1974,11 @@ export default function Home() {
   const filteredShows = shows
     .filter(show => {
       const matchesTab = activeTab === 'All' ? true : show.status === activeTab;
+      const matchesType = typeFilter === 'all' ? true : show.type === typeFilter;
       const matchesSearch = show.title.toLowerCase().includes(localSearch.toLowerCase()) || 
-                            show.genre.toLowerCase().includes(localSearch.toLowerCase());
-      return matchesTab && matchesSearch;
+                            show.genre.toLowerCase().includes(localSearch.toLowerCase()) ||
+                            show.platform.toLowerCase().includes(localSearch.toLowerCase());
+      return matchesTab && matchesType && matchesSearch;
     })
     .sort((a, b) => {
       if (sortBy === 'watchOrder') {
@@ -1874,10 +2048,35 @@ export default function Home() {
     <Container>
       <Header>
         <Logo>Tracker All</Logo>
+        
+        {/* Desktop actions */}
         <UserActions>
-          <UserEmail>{user.email}</UserEmail>
+          <UserEmail>{user?.email}</UserEmail>
           <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
         </UserActions>
+        
+        {/* Mobile menu toggle */}
+        <MenuButton onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? '✕' : '☰'}
+        </MenuButton>
+        
+        {/* Mobile dropdown menu */}
+        {menuOpen && (
+          <MobileDropdownMenu>
+            <span style={{ fontSize: '0.8rem', color: 'var(--foreground-muted)', wordBreak: 'break-all', textAlign: 'right' }}>
+              {user?.email}
+            </span>
+            <LogoutButton 
+              onClick={() => {
+                setMenuOpen(false);
+                handleLogout();
+              }}
+              style={{ width: '100%', marginTop: '4px' }}
+            >
+              Sair
+            </LogoutButton>
+          </MobileDropdownMenu>
+        )}
       </Header>
 
       <MainContent>
@@ -1908,8 +2107,8 @@ export default function Home() {
 
         {/* Real-time search engine for Shows or Add button for manual entry categories */}
         {activeCategory === 'shows' ? (
-          <div style={{ display: 'flex', gap: '12px', maxWidth: '600px', margin: '0 auto 20px', width: '100%', alignItems: 'center' }}>
-            <SearchContainer style={{ flex: 1, margin: 0 }}>
+          <div style={{ display: 'flex', gap: '12px', maxWidth: '800px', margin: '0 auto 20px', width: '100%', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <SearchContainer style={{ flex: '1 1 300px', margin: 0 }}>
               <SearchInput
                 type="text"
                 placeholder="Pesquise filmes ou séries para adicionar..."
@@ -1938,6 +2137,37 @@ export default function Home() {
                 </SuggestionsDropdown>
               )}
             </SearchContainer>
+            <ActionButton 
+              $variant="primary"
+              style={{ width: 'auto', display: 'flex', gap: '8px', padding: '12px 20px', height: '48px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                setShowTitle('');
+                setShowType('movie');
+                setShowYear('');
+                setShowGenre('');
+                setShowDirector('');
+                setShowRuntime('');
+                setShowProduction('');
+                setShowCountry('');
+                setShowPoster('');
+                setShowImdbID('');
+                
+                setStatus('Unwatched');
+                setRating(0);
+                setPlatform('Netflix');
+                setCustomPlatform('');
+                setTimesWatched(0);
+                setWatchOrder('');
+                setCurrentSeason(1);
+                setCurrentEpisode(1);
+                setSeasonsCount(1);
+                setEpisodesCount(12);
+                
+                setIsAddingShow(true);
+              }}
+            >
+              ＋ Adicionar Manual
+            </ActionButton>
             <ActionButton 
               $variant="secondary"
               style={{ width: 'auto', display: 'flex', gap: '8px', padding: '12px 20px', height: '48px', whiteSpace: 'nowrap' }}
@@ -1972,7 +2202,7 @@ export default function Home() {
                   setBookCustomFormat('');
                   setBookStatus('PlanToRead');
                   setBookCurrentPage(0);
-                  setBookRating(3);
+                  setBookRating(0);
                   setBookTimesRead(1);
                   setIsAddingBook(true);
                 } else {
@@ -1981,7 +2211,7 @@ export default function Home() {
                   setCoursePlatform('Udemy');
                   setCourseCustomPlatform('');
                   setCourseStatus('PlanToStart');
-                  setCourseRating(3);
+                  setCourseRating(0);
                   setCourseTimesCompleted(1);
                   setCourseProgressType('minutes');
                   setCourseTotalMinutes(120);
@@ -2012,33 +2242,37 @@ export default function Home() {
           </TabList>
 
           {activeCategory === 'shows' && (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--foreground-muted)' }}>Ordenar:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                style={{ 
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  color: '#ffffff',
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  outline: 'none'
-                }}
-              >
-                <option value="recent">Recentes</option>
-                <option value="watchOrder">Ordem Cronológica</option>
-                <option value="rating">Nota</option>
-                <option value="title">Título (A-Z)</option>
-              </select>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--foreground-muted)' }}>Tipo:</span>
+                <SortSelect
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as any)}
+                >
+                  <option value="all">Todos</option>
+                  <option value="movie">Filmes</option>
+                  <option value="series">Séries</option>
+                </SortSelect>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--foreground-muted)' }}>Ordenar:</span>
+                <SortSelect
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                >
+                  <option value="recent">Recentes</option>
+                  <option value="watchOrder">Ordem Cronológica</option>
+                  <option value="rating">Nota</option>
+                  <option value="title">Título (A-Z)</option>
+                </SortSelect>
+              </div>
             </div>
           )}
 
           <LocalSearchInput
             type="text"
-            placeholder={activeCategory === 'shows' ? "Filtrar por título ou gênero..." : activeCategory === 'books' ? "Filtrar por título, autor ou gênero..." : "Filtrar por título ou plataforma..."}
+            placeholder={activeCategory === 'shows' ? "Filtrar por título, gênero ou serviço..." : activeCategory === 'books' ? "Filtrar por título, autor ou gênero..." : "Filtrar por título ou plataforma..."}
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
           />
@@ -2354,11 +2588,9 @@ export default function Home() {
                         value={importGlobalPlatform}
                         onChange={(e) => setImportGlobalPlatform(e.target.value)}
                       >
-                        <option value="Netflix">Netflix</option>
-                        <option value="Apple TV+">Apple TV+</option>
-                        <option value="Prime Video">Prime Video</option>
-                        <option value="Disney+">Disney+</option>
-                        <option value="HBO Max">HBO Max</option>
+                        {STREAMING_PLATFORMS.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
                         <option value="Other">Outra</option>
                       </Select>
                     </InputWrapper>
@@ -2430,11 +2662,10 @@ export default function Home() {
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem' }}
                     >
                       <option value="" disabled>Plataforma...</option>
-                      <option value="Netflix">Netflix</option>
-                      <option value="Apple TV+">Apple TV+</option>
-                      <option value="Prime Video">Prime Video</option>
-                      <option value="Disney+">Disney+</option>
-                      <option value="HBO Max">HBO Max</option>
+                      {STREAMING_PLATFORMS.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                      <option value="Other">Outra</option>
                     </select>
 
                     <select 
@@ -2566,11 +2797,9 @@ export default function Home() {
                             onChange={(e) => setImportItems(prev => prev.map(i => i.id === item.id ? { ...i, platform: e.target.value } : i))}
                             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '4px 6px', borderRadius: '6px', fontSize: '0.8rem' }}
                           >
-                            <option value="Netflix">Netflix</option>
-                            <option value="Apple TV+">Apple TV+</option>
-                            <option value="Prime Video">Prime Video</option>
-                            <option value="Disney+">Disney+</option>
-                            <option value="HBO Max">HBO Max</option>
+                            {STREAMING_PLATFORMS.map(p => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
                             <option value="Other">Outra</option>
                           </select>
                         </div>
@@ -2662,49 +2891,125 @@ export default function Home() {
          ========================================================================= */}
       
       {/* MODAL: Adding new show details */}
-      {selectedOMDBShow && (
-        <ModalOverlay onClick={() => setSelectedOMDBShow(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <CloseButton onClick={() => setSelectedOMDBShow(null)}>✕</CloseButton>
+      {/* MODAL: Adding new show details */}
+      {isAddingShow && (
+        <ModalOverlay onClick={() => setIsAddingShow(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '850px' }}>
+            <CloseButton onClick={() => setIsAddingShow(false)}>✕</CloseButton>
+            
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '24px', background: 'linear-gradient(135deg, #ffffff 30%, var(--primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Adicionar Show (Filme ou Série)
+            </h3>
+
             <ModalGrid>
               <ModalPosterContainer>
                 <ModalPoster 
-                  src={selectedOMDBShow.Poster !== 'N/A' ? selectedOMDBShow.Poster : '/file.svg'} 
-                  alt={selectedOMDBShow.Title} 
+                  src={showPoster || '/file.svg'} 
+                  alt={showTitle || 'Poster Preview'} 
                 />
+                <InputWrapper style={{ marginTop: '16px' }}>
+                  <InputLabel htmlFor="add-poster">URL da Imagem de Capa</InputLabel>
+                  <SmallInput 
+                    type="text" 
+                    id="add-poster" 
+                    placeholder="https://exemplo.com/poster.jpg"
+                    value={showPoster}
+                    onChange={(e) => setShowPoster(e.target.value)}
+                  />
+                </InputWrapper>
               </ModalPosterContainer>
+              
               <ModalDetails>
-                <ShowHeader>
-                  <ShowTitle>{selectedOMDBShow.Title}</ShowTitle>
-                  <ShowYearMeta>
-                    {selectedOMDBShow.Year} • {selectedOMDBShow.Type === 'series' ? 'Série' : 'Filme'}
-                  </ShowYearMeta>
-                </ShowHeader>
+                <FormSection onSubmit={(e) => e.preventDefault()}>
+                  <FormRow>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-title">Título *</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-title" 
+                        required
+                        placeholder="Ex: Matrix"
+                        value={showTitle}
+                        onChange={(e) => setShowTitle(e.target.value)}
+                      />
+                    </InputWrapper>
 
-                <MetaGrid>
-                  <MetaItem>
-                    <span>Diretor</span>
-                    <span>{selectedOMDBShow.Director}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>Gênero</span>
-                    <span>{selectedOMDBShow.Genre}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>País</span>
-                    <span>{selectedOMDBShow.Country}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>Duração</span>
-                    <span>{selectedOMDBShow.Runtime}</span>
-                  </MetaItem>
-                  <MetaItem style={{ gridColumn: 'span 2' }}>
-                    <span>Produtoras</span>
-                    <span>{selectedOMDBShow.Production || 'N/A'}</span>
-                  </MetaItem>
-                </MetaGrid>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-type">Tipo</InputLabel>
+                      <Select 
+                        id="add-type"
+                        value={showType}
+                        onChange={(e) => setShowType(e.target.value as any)}
+                      >
+                        <option value="movie">Filme</option>
+                        <option value="series">Série</option>
+                      </Select>
+                    </InputWrapper>
+                  </FormRow>
 
-                <FormSection>
+                  <MetaGrid style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', padding: '12px', marginBottom: '16px' }}>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-year">Ano</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-year" 
+                        placeholder="Ex: 1999"
+                        value={showYear}
+                        onChange={(e) => setShowYear(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-director">Diretor</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-director" 
+                        placeholder="Ex: Lana Wachowski"
+                        value={showDirector}
+                        onChange={(e) => setShowDirector(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-genre">Gênero</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-genre" 
+                        placeholder="Ex: Ação, Sci-Fi"
+                        value={showGenre}
+                        onChange={(e) => setShowGenre(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-runtime">Duração</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-runtime" 
+                        placeholder="Ex: 136 min"
+                        value={showRuntime}
+                        onChange={(e) => setShowRuntime(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-country">País</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-country" 
+                        placeholder="Ex: USA"
+                        value={showCountry}
+                        onChange={(e) => setShowCountry(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="add-production">Produtoras</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="add-production" 
+                        placeholder="Ex: Warner Bros."
+                        value={showProduction}
+                        onChange={(e) => setShowProduction(e.target.value)}
+                      />
+                    </InputWrapper>
+                  </MetaGrid>
+
                   <FormRow>
                     <InputWrapper>
                       <InputLabel htmlFor="add-status">Status</InputLabel>
@@ -2728,19 +3033,30 @@ export default function Home() {
                     </InputWrapper>
 
                     <InputWrapper>
-                      <InputLabel>Nota (1 a 5 estrelas)</InputLabel>
-                      <StarRatingSelector>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarButton
-                            key={star}
+                      <InputLabel>Sua Nota</InputLabel>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                        <StarRatingSelector>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <StarButton
+                              key={star}
+                              type="button"
+                              $selected={star <= rating}
+                              onClick={() => setRating(star)}
+                            >
+                              ★
+                            </StarButton>
+                          ))}
+                        </StarRatingSelector>
+                        {rating > 0 && (
+                          <button 
                             type="button"
-                            $selected={star <= rating}
-                            onClick={() => setRating(star)}
+                            onClick={() => setRating(0)}
+                            style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                           >
-                            ★
-                          </StarButton>
-                        ))}
-                      </StarRatingSelector>
+                            Sem nota
+                          </button>
+                        )}
+                      </div>
                     </InputWrapper>
                   </FormRow>
 
@@ -2752,16 +3068,9 @@ export default function Home() {
                         value={platform} 
                         onChange={(e) => setPlatform(e.target.value)}
                       >
-                        <option value="Netflix">Netflix</option>
-                        <option value="Apple TV+">Apple TV+</option>
-                        <option value="Prime Video">Prime Video</option>
-                        <option value="Disney+">Disney+</option>
-                        <option value="HBO Max">HBO Max</option>
-                        <option value="Paramount+">Paramount+</option>
-                        <option value="GloboPlay">GloboPlay</option>
-                        <option value="F1 TV">F1 TV</option>
-                        <option value="Universal+">Universal+</option>
-                        <option value="Crunchyroll">Crunchyroll</option>
+                        {STREAMING_PLATFORMS.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
                         <option value="Other">Outro (Digitar)</option>
                       </Select>
                     </InputWrapper>
@@ -2806,7 +3115,7 @@ export default function Home() {
                   </FormRow>
 
                   {/* Series specifics */}
-                  {selectedOMDBShow.Type === 'series' && (
+                  {showType === 'series' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
                       <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
                       <FormRow>
@@ -2863,10 +3172,10 @@ export default function Home() {
                   )}
 
                   <ModalActions>
-                    <ActionButton $variant="secondary" onClick={() => setSelectedOMDBShow(null)}>
+                    <ActionButton $variant="secondary" type="button" onClick={() => setIsAddingShow(false)}>
                       Cancelar
                     </ActionButton>
-                    <ActionButton $variant="primary" onClick={handleSaveShow}>
+                    <ActionButton $variant="primary" type="button" onClick={handleSaveShow} disabled={!showTitle.trim()}>
                       Adicionar à Lista
                     </ActionButton>
                   </ModalActions>
@@ -2880,44 +3189,112 @@ export default function Home() {
       {/* MODAL: Editing tracked show */}
       {editingShow && (
         <ModalOverlay onClick={() => setEditingShow(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '850px' }}>
             <CloseButton onClick={() => setEditingShow(null)}>✕</CloseButton>
+            
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '24px', background: 'linear-gradient(135deg, #ffffff 30%, var(--primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Editar Show (Filme ou Série)
+            </h3>
+
             <ModalGrid>
               <ModalPosterContainer>
-                <ModalPoster src={editingShow.poster} alt={editingShow.title} />
+                <ModalPoster src={showPoster || '/file.svg'} alt={showTitle} />
+                <InputWrapper style={{ marginTop: '16px' }}>
+                  <InputLabel htmlFor="edit-poster">URL da Imagem de Capa</InputLabel>
+                  <SmallInput 
+                    type="text" 
+                    id="edit-poster" 
+                    placeholder="https://exemplo.com/poster.jpg"
+                    value={showPoster}
+                    onChange={(e) => setShowPoster(e.target.value)}
+                  />
+                </InputWrapper>
               </ModalPosterContainer>
+              
               <ModalDetails>
-                <ShowHeader>
-                  <ShowTitle>{editingShow.title}</ShowTitle>
-                  <ShowYearMeta>
-                    {editingShow.year} • {editingShow.type === 'series' ? 'Série' : 'Filme'}
-                  </ShowYearMeta>
-                </ShowHeader>
+                <FormSection onSubmit={(e) => e.preventDefault()}>
+                  <FormRow>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-title">Título *</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-title" 
+                        required
+                        value={showTitle}
+                        onChange={(e) => setShowTitle(e.target.value)}
+                      />
+                    </InputWrapper>
 
-                <MetaGrid>
-                  <MetaItem>
-                    <span>Diretor</span>
-                    <span>{editingShow.director}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>Gênero</span>
-                    <span>{editingShow.genre}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>País</span>
-                    <span>{editingShow.country}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <span>Duração</span>
-                    <span>{editingShow.runtime}</span>
-                  </MetaItem>
-                  <MetaItem style={{ gridColumn: 'span 2' }}>
-                    <span>Produtoras</span>
-                    <span>{editingShow.production}</span>
-                  </MetaItem>
-                </MetaGrid>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-type">Tipo</InputLabel>
+                      <Select 
+                        id="edit-type"
+                        value={showType}
+                        onChange={(e) => setShowType(e.target.value as any)}
+                      >
+                        <option value="movie">Filme</option>
+                        <option value="series">Série</option>
+                      </Select>
+                    </InputWrapper>
+                  </FormRow>
 
-                <FormSection>
+                  <MetaGrid style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', padding: '12px', marginBottom: '16px' }}>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-year">Ano</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-year" 
+                        value={showYear}
+                        onChange={(e) => setShowYear(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-director">Diretor</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-director" 
+                        value={showDirector}
+                        onChange={(e) => setShowDirector(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-genre">Gênero</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-genre" 
+                        value={showGenre}
+                        onChange={(e) => setShowGenre(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-runtime">Duração</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-runtime" 
+                        value={showRuntime}
+                        onChange={(e) => setShowRuntime(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-country">País</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-country" 
+                        value={showCountry}
+                        onChange={(e) => setShowCountry(e.target.value)}
+                      />
+                    </InputWrapper>
+                    <InputWrapper>
+                      <InputLabel htmlFor="edit-production">Produtoras</InputLabel>
+                      <SmallInput 
+                        type="text" 
+                        id="edit-production" 
+                        value={showProduction}
+                        onChange={(e) => setShowProduction(e.target.value)}
+                      />
+                    </InputWrapper>
+                  </MetaGrid>
+
                   <FormRow>
                     <InputWrapper>
                       <InputLabel htmlFor="edit-status">Status</InputLabel>
@@ -2942,18 +3319,29 @@ export default function Home() {
 
                     <InputWrapper>
                       <InputLabel>Sua Nota</InputLabel>
-                      <StarRatingSelector>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarButton
-                            key={star}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                        <StarRatingSelector>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <StarButton
+                              key={star}
+                              type="button"
+                              $selected={star <= rating}
+                              onClick={() => setRating(star)}
+                            >
+                              ★
+                            </StarButton>
+                          ))}
+                        </StarRatingSelector>
+                        {rating > 0 && (
+                          <button 
                             type="button"
-                            $selected={star <= rating}
-                            onClick={() => setRating(star)}
+                            onClick={() => setRating(0)}
+                            style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                           >
-                            ★
-                          </StarButton>
-                        ))}
-                      </StarRatingSelector>
+                            Sem nota
+                          </button>
+                        )}
+                      </div>
                     </InputWrapper>
                   </FormRow>
 
@@ -2965,16 +3353,9 @@ export default function Home() {
                         value={platform} 
                         onChange={(e) => setPlatform(e.target.value)}
                       >
-                        <option value="Netflix">Netflix</option>
-                        <option value="Apple TV+">Apple TV+</option>
-                        <option value="Prime Video">Prime Video</option>
-                        <option value="Disney+">Disney+</option>
-                        <option value="HBO Max">HBO Max</option>
-                        <option value="Paramount+">Paramount+</option>
-                        <option value="GloboPlay">GloboPlay</option>
-                        <option value="F1 TV">F1 TV</option>
-                        <option value="Universal+">Universal+</option>
-                        <option value="Crunchyroll">Crunchyroll</option>
+                        {STREAMING_PLATFORMS.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
                         <option value="Other">Outro (Digitar)</option>
                       </Select>
                     </InputWrapper>
@@ -3018,7 +3399,7 @@ export default function Home() {
                   </FormRow>
 
                   {/* Series specifics */}
-                  {editingShow.type === 'series' && (
+                  {showType === 'series' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
                       <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
                       <FormRow>
@@ -3075,14 +3456,14 @@ export default function Home() {
                   )}
 
                   <ModalActions style={{ justifyContent: 'space-between' }}>
-                    <ActionButton $variant="danger" onClick={handleDeleteShow}>
+                    <ActionButton $variant="danger" type="button" onClick={handleDeleteShow}>
                       Remover da Lista
                     </ActionButton>
                     <div style={{ display: 'flex', gap: '12px' }}>
-                      <ActionButton $variant="secondary" onClick={() => setEditingShow(null)}>
+                      <ActionButton $variant="secondary" type="button" onClick={() => setEditingShow(null)}>
                         Cancelar
                       </ActionButton>
-                      <ActionButton $variant="primary" onClick={handleUpdateShow}>
+                      <ActionButton $variant="primary" type="button" onClick={handleUpdateShow} disabled={!showTitle.trim()}>
                         Salvar Alterações
                       </ActionButton>
                     </div>
@@ -3235,18 +3616,29 @@ export default function Home() {
 
                   <InputWrapper>
                     <InputLabel>Sua Nota</InputLabel>
-                    <StarRatingSelector>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarButton
-                          key={star}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <StarRatingSelector>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarButton
+                            key={star}
+                            type="button"
+                            $selected={star <= bookRating}
+                            onClick={() => setBookRating(star)}
+                          >
+                            ★
+                          </StarButton>
+                        ))}
+                      </StarRatingSelector>
+                      {bookRating > 0 && (
+                        <button 
                           type="button"
-                          $selected={star <= bookRating}
-                          onClick={() => setBookRating(star)}
+                          onClick={() => setBookRating(0)}
+                          style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          ★
-                        </StarButton>
-                      ))}
-                    </StarRatingSelector>
+                          Sem nota
+                        </button>
+                      )}
+                    </div>
                   </InputWrapper>
                 </FormRow>
 
@@ -3401,18 +3793,29 @@ export default function Home() {
 
                   <InputWrapper>
                     <InputLabel>Sua Nota</InputLabel>
-                    <StarRatingSelector>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarButton
-                          key={star}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <StarRatingSelector>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarButton
+                            key={star}
+                            type="button"
+                            $selected={star <= bookRating}
+                            onClick={() => setBookRating(star)}
+                          >
+                            ★
+                          </StarButton>
+                        ))}
+                      </StarRatingSelector>
+                      {bookRating > 0 && (
+                        <button 
                           type="button"
-                          $selected={star <= bookRating}
-                          onClick={() => setBookRating(star)}
+                          onClick={() => setBookRating(0)}
+                          style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          ★
-                        </StarButton>
-                      ))}
-                    </StarRatingSelector>
+                          Sem nota
+                        </button>
+                      )}
+                    </div>
                   </InputWrapper>
                 </FormRow>
 
@@ -3603,18 +4006,29 @@ export default function Home() {
 
                   <InputWrapper>
                     <InputLabel>Sua Nota</InputLabel>
-                    <StarRatingSelector>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarButton
-                          key={star}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <StarRatingSelector>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarButton
+                            key={star}
+                            type="button"
+                            $selected={star <= courseRating}
+                            onClick={() => setCourseRating(star)}
+                          >
+                            ★
+                          </StarButton>
+                        ))}
+                      </StarRatingSelector>
+                      {courseRating > 0 && (
+                        <button 
                           type="button"
-                          $selected={star <= courseRating}
-                          onClick={() => setCourseRating(star)}
+                          onClick={() => setCourseRating(0)}
+                          style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          ★
-                        </StarButton>
-                      ))}
-                    </StarRatingSelector>
+                          Sem nota
+                        </button>
+                      )}
+                    </div>
                   </InputWrapper>
                 </FormRow>
 
@@ -3798,18 +4212,29 @@ export default function Home() {
 
                   <InputWrapper>
                     <InputLabel>Sua Nota</InputLabel>
-                    <StarRatingSelector>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarButton
-                          key={star}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <StarRatingSelector>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarButton
+                            key={star}
+                            type="button"
+                            $selected={star <= courseRating}
+                            onClick={() => setCourseRating(star)}
+                          >
+                            ★
+                          </StarButton>
+                        ))}
+                      </StarRatingSelector>
+                      {courseRating > 0 && (
+                        <button 
                           type="button"
-                          $selected={star <= courseRating}
-                          onClick={() => setCourseRating(star)}
+                          onClick={() => setCourseRating(0)}
+                          style={{ background: 'none', border: 'none', color: 'var(--foreground-muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          ★
-                        </StarButton>
-                      ))}
-                    </StarRatingSelector>
+                          Sem nota
+                        </button>
+                      )}
+                    </div>
                   </InputWrapper>
                 </FormRow>
 
