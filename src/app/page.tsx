@@ -1091,7 +1091,7 @@ export default function Home() {
   const [rating, setRating] = useState<number>(0);
   const [platform, setPlatform] = useState('Netflix');
   const [customPlatform, setCustomPlatform] = useState('');
-  const [timesWatched, setTimesWatched] = useState<number>(1);
+  const [timesWatched, setTimesWatched] = useState<number | ''>(1);
   const [watchOrder, setWatchOrder] = useState<number | ''>('');
   const [currentSeason, setCurrentSeason] = useState<number | ''>(1);
   const [currentEpisode, setCurrentEpisode] = useState<number | ''>(1);
@@ -1294,7 +1294,7 @@ export default function Home() {
       status,
       rating,
       platform: actualPlatform || 'N/A',
-      timesWatched,
+      timesWatched: timesWatched !== '' ? timesWatched : (status === 'Watched' ? 1 : 0),
       watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(showType === 'series' ? {
         seasonsCount: seasonsCount !== '' ? seasonsCount : null,
@@ -1359,7 +1359,7 @@ export default function Home() {
       setCustomPlatform(show.platform);
     }
 
-    setTimesWatched(show.timesWatched);
+    setTimesWatched(show.timesWatched !== undefined && show.timesWatched !== null ? show.timesWatched : (show.status === 'Watched' ? 1 : 0));
     setWatchOrder(show.watchOrder !== undefined && show.watchOrder !== null ? show.watchOrder : '');
     if (show.type === 'series') {
       setCurrentSeason(show.currentSeason !== undefined && show.currentSeason !== null ? show.currentSeason : '');
@@ -1388,7 +1388,7 @@ export default function Home() {
       status,
       rating,
       platform: actualPlatform || 'N/A',
-      timesWatched,
+      timesWatched: timesWatched !== '' ? timesWatched : (status === 'Watched' ? 1 : 0),
       watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(showType === 'series' ? {
         seasonsCount: seasonsCount !== '' ? seasonsCount : null,
@@ -3111,7 +3111,7 @@ export default function Home() {
                         id="add-times-watched" 
                         min="0"
                         value={timesWatched}
-                        onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                        onChange={(e) => setTimesWatched(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
 
@@ -3407,7 +3407,7 @@ export default function Home() {
                         id="edit-times-watched" 
                         min="0"
                         value={timesWatched}
-                        onChange={(e) => setTimesWatched(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                        onChange={(e) => setTimesWatched(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                       />
                     </InputWrapper>
 
