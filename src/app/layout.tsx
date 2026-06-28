@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Tracker All",
   description: "Gerencie livros, cursos, séries e muito mais!",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 /**
