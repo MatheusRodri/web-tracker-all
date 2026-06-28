@@ -3156,35 +3156,33 @@ export default function Home() {
                         </InputWrapper>
                       </FormRow>
 
-                      {status !== 'Unwatched' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
-                          <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
-                          <FormRow>
-                            <InputWrapper>
-                              <InputLabel htmlFor="add-cur-season">Temporada Atual</InputLabel>
-                              <SmallInput 
-                                type="number" 
-                                id="add-cur-season" 
-                                min="1"
-                                max={seasonsCount}
-                                value={currentSeason}
-                                onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
-                              />
-                            </InputWrapper>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
+                        <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                        <FormRow>
+                          <InputWrapper>
+                            <InputLabel htmlFor="add-cur-season">Temporada Atual</InputLabel>
+                            <SmallInput 
+                              type="number" 
+                              id="add-cur-season" 
+                              min="1"
+                              max={seasonsCount}
+                              value={currentSeason}
+                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                            />
+                          </InputWrapper>
 
-                            <InputWrapper>
-                              <InputLabel htmlFor="add-cur-episode">Episódio Atual</InputLabel>
-                              <SmallInput 
-                                type="number" 
-                                id="add-cur-episode" 
-                                min="1"
-                                value={currentEpisode}
-                                onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
-                              />
-                            </InputWrapper>
-                          </FormRow>
-                        </div>
-                      )}
+                          <InputWrapper>
+                            <InputLabel htmlFor="add-cur-episode">Episódio Atual</InputLabel>
+                            <SmallInput 
+                              type="number" 
+                              id="add-cur-episode" 
+                              min="1"
+                              value={currentEpisode}
+                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                            />
+                          </InputWrapper>
+                        </FormRow>
+                      </div>
                     </div>
                   )}
 
@@ -3454,35 +3452,33 @@ export default function Home() {
                         </InputWrapper>
                       </FormRow>
 
-                      {status !== 'Unwatched' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
-                          <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
-                          <FormRow>
-                            <InputWrapper>
-                              <InputLabel htmlFor="edit-cur-season">Temporada Atual</InputLabel>
-                              <SmallInput 
-                                type="number" 
-                                id="edit-cur-season" 
-                                min="1"
-                                max={seasonsCount}
-                                value={currentSeason}
-                                onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
-                              />
-                            </InputWrapper>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
+                        <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                        <FormRow>
+                          <InputWrapper>
+                            <InputLabel htmlFor="edit-cur-season">Temporada Atual</InputLabel>
+                            <SmallInput 
+                              type="number" 
+                              id="edit-cur-season" 
+                              min="1"
+                              max={seasonsCount}
+                              value={currentSeason}
+                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                            />
+                          </InputWrapper>
 
-                            <InputWrapper>
-                              <InputLabel htmlFor="edit-cur-episode">Episódio Atual</InputLabel>
-                              <SmallInput 
-                                type="number" 
-                                id="edit-cur-episode" 
-                                min="1"
-                                value={currentEpisode}
-                                onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
-                              />
-                            </InputWrapper>
-                          </FormRow>
-                        </div>
-                      )}
+                          <InputWrapper>
+                            <InputLabel htmlFor="edit-cur-episode">Episódio Atual</InputLabel>
+                            <SmallInput 
+                              type="number" 
+                              id="edit-cur-episode" 
+                              min="1"
+                              value={currentEpisode}
+                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                            />
+                          </InputWrapper>
+                        </FormRow>
+                      </div>
                     </div>
                   )}
 
