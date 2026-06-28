@@ -732,8 +732,11 @@ const ModalPosterContainer = styled.div`
   position: relative;
   background-color: #101017;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
+  padding: 20px;
+  gap: 16px;
   
   @media (max-width: 599px) {
     max-height: 300px;
@@ -2907,16 +2910,27 @@ export default function Home() {
                   src={showPoster || '/file.svg'} 
                   alt={showTitle || 'Poster Preview'} 
                 />
-                <InputWrapper style={{ marginTop: '16px' }}>
-                  <InputLabel htmlFor="add-poster">URL da Imagem de Capa</InputLabel>
-                  <SmallInput 
-                    type="text" 
-                    id="add-poster" 
-                    placeholder="https://exemplo.com/poster.jpg"
-                    value={showPoster}
-                    onChange={(e) => setShowPoster(e.target.value)}
-                  />
-                </InputWrapper>
+                {!showPoster ? (
+                  <InputWrapper style={{ width: '100%' }}>
+                    <InputLabel htmlFor="add-poster">URL da Imagem de Capa</InputLabel>
+                    <SmallInput 
+                      type="text" 
+                      id="add-poster" 
+                      placeholder="https://exemplo.com/poster.jpg"
+                      value={showPoster}
+                      onChange={(e) => setShowPoster(e.target.value)}
+                    />
+                  </InputWrapper>
+                ) : (
+                  <ActionButton 
+                    $variant="secondary" 
+                    type="button"
+                    style={{ width: '100%', fontSize: '0.8rem', padding: '8px 16px' }} 
+                    onClick={() => setShowPoster('')}
+                  >
+                    Remover Capa
+                  </ActionButton>
+                )}
               </ModalPosterContainer>
               
               <ModalDetails>
@@ -3117,7 +3131,7 @@ export default function Home() {
                   {/* Series specifics */}
                   {showType === 'series' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
-                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Dados da Série</h4>
                       <FormRow>
                         <InputWrapper>
                           <InputLabel htmlFor="add-seasons">Total de Temporadas</InputLabel>
@@ -3143,30 +3157,33 @@ export default function Home() {
                       </FormRow>
 
                       {status !== 'Unwatched' && (
-                        <FormRow>
-                          <InputWrapper>
-                            <InputLabel htmlFor="add-cur-season">Temporada Atual</InputLabel>
-                            <SmallInput 
-                              type="number" 
-                              id="add-cur-season" 
-                              min="1"
-                              max={seasonsCount}
-                              value={currentSeason}
-                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
-                            />
-                          </InputWrapper>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
+                          <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                          <FormRow>
+                            <InputWrapper>
+                              <InputLabel htmlFor="add-cur-season">Temporada Atual</InputLabel>
+                              <SmallInput 
+                                type="number" 
+                                id="add-cur-season" 
+                                min="1"
+                                max={seasonsCount}
+                                value={currentSeason}
+                                onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                              />
+                            </InputWrapper>
 
-                          <InputWrapper>
-                            <InputLabel htmlFor="add-cur-episode">Episódio Atual</InputLabel>
-                            <SmallInput 
-                              type="number" 
-                              id="add-cur-episode" 
-                              min="1"
-                              value={currentEpisode}
-                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
-                            />
-                          </InputWrapper>
-                        </FormRow>
+                            <InputWrapper>
+                              <InputLabel htmlFor="add-cur-episode">Episódio Atual</InputLabel>
+                              <SmallInput 
+                                type="number" 
+                                id="add-cur-episode" 
+                                min="1"
+                                value={currentEpisode}
+                                onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                              />
+                            </InputWrapper>
+                          </FormRow>
+                        </div>
                       )}
                     </div>
                   )}
@@ -3199,16 +3216,27 @@ export default function Home() {
             <ModalGrid>
               <ModalPosterContainer>
                 <ModalPoster src={showPoster || '/file.svg'} alt={showTitle} />
-                <InputWrapper style={{ marginTop: '16px' }}>
-                  <InputLabel htmlFor="edit-poster">URL da Imagem de Capa</InputLabel>
-                  <SmallInput 
-                    type="text" 
-                    id="edit-poster" 
-                    placeholder="https://exemplo.com/poster.jpg"
-                    value={showPoster}
-                    onChange={(e) => setShowPoster(e.target.value)}
-                  />
-                </InputWrapper>
+                {!showPoster ? (
+                  <InputWrapper style={{ width: '100%' }}>
+                    <InputLabel htmlFor="edit-poster">URL da Imagem de Capa</InputLabel>
+                    <SmallInput 
+                      type="text" 
+                      id="edit-poster" 
+                      placeholder="https://exemplo.com/poster.jpg"
+                      value={showPoster}
+                      onChange={(e) => setShowPoster(e.target.value)}
+                    />
+                  </InputWrapper>
+                ) : (
+                  <ActionButton 
+                    $variant="secondary" 
+                    type="button"
+                    style={{ width: '100%', fontSize: '0.8rem', padding: '8px 16px' }} 
+                    onClick={() => setShowPoster('')}
+                  >
+                    Remover Capa
+                  </ActionButton>
+                )}
               </ModalPosterContainer>
               
               <ModalDetails>
@@ -3401,7 +3429,7 @@ export default function Home() {
                   {/* Series specifics */}
                   {showType === 'series' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
-                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Dados da Série</h4>
                       <FormRow>
                         <InputWrapper>
                           <InputLabel htmlFor="edit-seasons">Total de Temporadas</InputLabel>
@@ -3427,30 +3455,33 @@ export default function Home() {
                       </FormRow>
 
                       {status !== 'Unwatched' && (
-                        <FormRow>
-                          <InputWrapper>
-                            <InputLabel htmlFor="edit-cur-season">Temporada Atual</InputLabel>
-                            <SmallInput 
-                              type="number" 
-                              id="edit-cur-season" 
-                              min="1"
-                              max={seasonsCount}
-                              value={currentSeason}
-                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
-                            />
-                          </InputWrapper>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '20px' }}>
+                          <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--accent)' }}>Progresso da Série</h4>
+                          <FormRow>
+                            <InputWrapper>
+                              <InputLabel htmlFor="edit-cur-season">Temporada Atual</InputLabel>
+                              <SmallInput 
+                                type="number" 
+                                id="edit-cur-season" 
+                                min="1"
+                                max={seasonsCount}
+                                value={currentSeason}
+                                onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                              />
+                            </InputWrapper>
 
-                          <InputWrapper>
-                            <InputLabel htmlFor="edit-cur-episode">Episódio Atual</InputLabel>
-                            <SmallInput 
-                              type="number" 
-                              id="edit-cur-episode" 
-                              min="1"
-                              value={currentEpisode}
-                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
-                            />
-                          </InputWrapper>
-                        </FormRow>
+                            <InputWrapper>
+                              <InputLabel htmlFor="edit-cur-episode">Episódio Atual</InputLabel>
+                              <SmallInput 
+                                type="number" 
+                                id="edit-cur-episode" 
+                                min="1"
+                                value={currentEpisode}
+                                onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                              />
+                            </InputWrapper>
+                          </FormRow>
+                        </div>
                       )}
                     </div>
                   )}
