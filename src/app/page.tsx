@@ -1093,10 +1093,10 @@ export default function Home() {
   const [customPlatform, setCustomPlatform] = useState('');
   const [timesWatched, setTimesWatched] = useState<number>(1);
   const [watchOrder, setWatchOrder] = useState<number | ''>('');
-  const [currentSeason, setCurrentSeason] = useState<number>(1);
-  const [currentEpisode, setCurrentEpisode] = useState<number>(1);
-  const [seasonsCount, setSeasonsCount] = useState<number>(1);
-  const [episodesCount, setEpisodesCount] = useState<number>(1);
+  const [currentSeason, setCurrentSeason] = useState<number | ''>(1);
+  const [currentEpisode, setCurrentEpisode] = useState<number | ''>(1);
+  const [seasonsCount, setSeasonsCount] = useState<number | ''>(1);
+  const [episodesCount, setEpisodesCount] = useState<number | ''>(1);
 
   // Show Manual & Edit Form States
   const [showTitle, setShowTitle] = useState('');
@@ -1297,10 +1297,10 @@ export default function Home() {
       timesWatched,
       watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(showType === 'series' ? {
-        seasonsCount,
-        episodesCount,
-        currentSeason,
-        currentEpisode
+        seasonsCount: seasonsCount !== '' ? seasonsCount : null,
+        episodesCount: episodesCount !== '' ? episodesCount : null,
+        currentSeason: currentSeason !== '' ? currentSeason : null,
+        currentEpisode: currentEpisode !== '' ? currentEpisode : null
       } : {})
     };
 
@@ -1362,10 +1362,10 @@ export default function Home() {
     setTimesWatched(show.timesWatched);
     setWatchOrder(show.watchOrder !== undefined && show.watchOrder !== null ? show.watchOrder : '');
     if (show.type === 'series') {
-      setCurrentSeason(show.currentSeason || 1);
-      setCurrentEpisode(show.currentEpisode || 1);
-      setSeasonsCount(show.seasonsCount || 1);
-      setEpisodesCount(show.episodesCount || 1);
+      setCurrentSeason(show.currentSeason !== undefined && show.currentSeason !== null ? show.currentSeason : '');
+      setCurrentEpisode(show.currentEpisode !== undefined && show.currentEpisode !== null ? show.currentEpisode : '');
+      setSeasonsCount(show.seasonsCount !== undefined && show.seasonsCount !== null ? show.seasonsCount : '');
+      setEpisodesCount(show.episodesCount !== undefined && show.episodesCount !== null ? show.episodesCount : '');
     }
   };
 
@@ -1391,10 +1391,10 @@ export default function Home() {
       timesWatched,
       watchOrder: watchOrder !== '' ? watchOrder : null,
       ...(showType === 'series' ? {
-        currentSeason,
-        currentEpisode,
-        seasonsCount,
-        episodesCount
+        seasonsCount: seasonsCount !== '' ? seasonsCount : null,
+        episodesCount: episodesCount !== '' ? episodesCount : null,
+        currentSeason: currentSeason !== '' ? currentSeason : null,
+        currentEpisode: currentEpisode !== '' ? currentEpisode : null
       } : {})
     };
 
@@ -3138,9 +3138,9 @@ export default function Home() {
                           <SmallInput 
                             type="number" 
                             id="add-seasons" 
-                            min="1"
+                            min="0"
                             value={seasonsCount}
-                            onChange={(e) => setSeasonsCount(parseInt(e.target.value, 10) || 1)}
+                            onChange={(e) => setSeasonsCount(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                           />
                         </InputWrapper>
 
@@ -3149,9 +3149,9 @@ export default function Home() {
                           <SmallInput 
                             type="number" 
                             id="add-episodes" 
-                            min="1"
+                            min="0"
                             value={episodesCount}
-                            onChange={(e) => setEpisodesCount(parseInt(e.target.value, 10) || 1)}
+                            onChange={(e) => setEpisodesCount(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                           />
                         </InputWrapper>
                       </FormRow>
@@ -3164,10 +3164,10 @@ export default function Home() {
                             <SmallInput 
                               type="number" 
                               id="add-cur-season" 
-                              min="1"
-                              max={seasonsCount}
+                              min="0"
+                              max={seasonsCount !== '' ? seasonsCount : undefined}
                               value={currentSeason}
-                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                              onChange={(e) => setCurrentSeason(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                             />
                           </InputWrapper>
 
@@ -3176,9 +3176,9 @@ export default function Home() {
                             <SmallInput 
                               type="number" 
                               id="add-cur-episode" 
-                              min="1"
+                              min="0"
                               value={currentEpisode}
-                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                              onChange={(e) => setCurrentEpisode(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                             />
                           </InputWrapper>
                         </FormRow>
@@ -3434,9 +3434,9 @@ export default function Home() {
                           <SmallInput 
                             type="number" 
                             id="edit-seasons" 
-                            min="1"
+                            min="0"
                             value={seasonsCount}
-                            onChange={(e) => setSeasonsCount(parseInt(e.target.value, 10) || 1)}
+                            onChange={(e) => setSeasonsCount(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                           />
                         </InputWrapper>
 
@@ -3445,9 +3445,9 @@ export default function Home() {
                           <SmallInput 
                             type="number" 
                             id="edit-episodes" 
-                            min="1"
+                            min="0"
                             value={episodesCount}
-                            onChange={(e) => setEpisodesCount(parseInt(e.target.value, 10) || 1)}
+                            onChange={(e) => setEpisodesCount(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                           />
                         </InputWrapper>
                       </FormRow>
@@ -3460,10 +3460,10 @@ export default function Home() {
                             <SmallInput 
                               type="number" 
                               id="edit-cur-season" 
-                              min="1"
-                              max={seasonsCount}
+                              min="0"
+                              max={seasonsCount !== '' ? seasonsCount : undefined}
                               value={currentSeason}
-                              onChange={(e) => setCurrentSeason(parseInt(e.target.value, 10) || 1)}
+                              onChange={(e) => setCurrentSeason(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                             />
                           </InputWrapper>
 
@@ -3472,9 +3472,9 @@ export default function Home() {
                             <SmallInput 
                               type="number" 
                               id="edit-cur-episode" 
-                              min="1"
+                              min="0"
                               value={currentEpisode}
-                              onChange={(e) => setCurrentEpisode(parseInt(e.target.value, 10) || 1)}
+                              onChange={(e) => setCurrentEpisode(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0))}
                             />
                           </InputWrapper>
                         </FormRow>
