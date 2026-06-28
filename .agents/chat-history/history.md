@@ -112,3 +112,35 @@
 > - **Cadastro Manual de Shows:** Adicionamos um botão de "Adicionar Manual" que permite cadastrar novos títulos com metadados personalizados editáveis (como Título, Tipo, Ano, Diretor, Gênero, Duração, etc.) sem depender de buscas na API do OMDB.
 > - **Filtro de Tipo:** Criamos um filtro por tipo (Todos, Filmes, Séries) integrado aos controles da dashboard.
 
+---
+## Configuração de Favicon Personalizado
+**Usuário:**
+> dentro da pasta public, tem um arquivo @[public/icon.png] preciso colocar no favicon do meu projeto. 
+
+**Gemini:**
+> Configurei `public/icon.png` como favicon no Next.js adicionando o caminho de ícone nos metadados de `layout.tsx` e removendo o arquivo padrão `src/app/favicon.ico` para evitar conflitos.
+
+---
+## Ajuste do Poster da Série, Quantidade de Vezes Assistida e Divisão de Seções
+**Usuário:**
+> Alterações:
+> - Abaixo da imagem do filme tem um texto, deveria sumir, quando tiver uma imagem.
+> - Na sessão progresso da série, precisa de alguma alterações, tota de serie e episodio estão certos, informando que a 5 temporada tem 12 eps, é isso ? Porque se sim, essa sessão deveria ter um outro nome, tipo Dados da serie, progressso da serie será uma nova sessão onde eu informo qual temporada estou e qual ep estou.
+> - Tem um detalhe, ele pode permitir que eu zere o campo, mas deixe salvar no total de temporadas, e temporada atual
+> - Ultimo detalhe, a mesma alteração precisa para o campo de quantide de vezes assistida, porque se a pessoa tiver no celular, ela não consegue ver a opção de aumentar o contador...
+
+**Gemini:**
+> Implementamos as seguintes melhorias:
+> - Ajustamos o container do poster para alinhar os elementos verticalmente. Se houver imagem carregada, ocultamos o input da URL e exibimos o botão "Remover Capa".
+> - Renomeamos a seção de totais para "Dados da Série" e criamos a seção "Progresso da Série" para os campos de temporada e episódio atual, tornando-a permanente para todas as séries.
+> - Atualizamos o estado e manipulação dos campos de quantidade de temporadas/episódios/vezes assistida para suportarem string vazia (limpeza dos inputs no celular) e realizamos fallback inteligente ao salvar na base de dados Firestore.
+
+---
+## Refatoração da Dashboard e Setup de Testes
+**Usuário:**
+> Vamos lá, vc sempre tem que ler o que está na pasta @[c:\projects\web-tracker-all\.agents] vc esqueceu de alguns principios. 
+> O que vamos fazer agora:
+> - o arquivo @[src/app/page.tsx] está enorme, com mais de 4mil linhas, quebre isso em components, functions...
+> - Na hora de commit, nunca faça um unico comite com N arquivos dentro. 
+> - Crie arquivos de tests, crie o maximo de teste possiveis.
+
