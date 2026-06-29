@@ -144,3 +144,6 @@
 > - Na hora de commit, nunca faça um unico comite com N arquivos dentro. 
 > - Crie arquivos de tests, crie o maximo de teste possiveis.
 
+**Gemini:**
+> Configuramos o ambiente de testes unitários com Jest e `jsdom`, e refatoramos o arquivo `src/app/page.tsx` para extrair os componentes de cartões (`ShowCard`, `BookCard`, `CourseCard`), modais (`AddShowModal`, `EditShowModal`, `ImportShowsModal`, `AddBookModal`, `EditBookModal`, `AddCourseModal`, `EditCourseModal`), estilos (`src/app/styles.ts`), constantes e ajudantes (`src/utils/helpers.tsx`). Adicionamos testes unitários abrangentes com 100% de sucesso. Todo o processo foi dividido em commits individuais.
+
